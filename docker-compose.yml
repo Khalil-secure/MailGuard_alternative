@@ -7,7 +7,7 @@ services:
     user: "0:0"
     environment:
       VAULT_LOCAL_CONFIG: '{"storage": {"file": {"path": "/vault/data"}}, "listener": [{"tcp": {"address": "0.0.0.0:8200", "tls_disable": 1}}], "ui": true, "disable_mlock": true, "default_lease_ttl": "168h", "max_lease_ttl": "720h"}'
-    command: vault server -config=/vault/config/local.json
+    command: server -config=/vault/config/local.json
     volumes:
       - vault-data:/vault/data
     cap_add:
@@ -154,6 +154,7 @@ services:
   loki:
     image: grafana/loki:latest
     container_name: mailguard-loki
+    user: root
     volumes:
       - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yaml
       - loki-data:/tmp/loki
