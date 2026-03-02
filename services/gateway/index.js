@@ -148,12 +148,6 @@ async function recordScan(userId) {
   await pool.query('INSERT INTO scans (user_id) VALUES ($1)', [userId])
 }
 
-
-if (data.checks) {
-  data.checks.filter(c => c.verdict !== 'SAFE').forEach(c => {
-    metrics.engineHits.inc({ engine: c.source })
-  })
-}
 // ── ROUTES ──
 
 app.get('/health', (req, res) => {
