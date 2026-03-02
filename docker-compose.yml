@@ -14,6 +14,12 @@ services:
       - IPC_LOCK
     networks:
       - mailguard-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8200/v1/sys/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
   postgres:
     image: postgres:15
@@ -26,6 +32,12 @@ services:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - mailguard-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mailguard -d mailguard"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
   gateway:
     build: ./services/gateway
@@ -34,11 +46,21 @@ services:
     env_file:
       - .env
     depends_on:
-      - vault
-      - phishing-detector
-      - postgres
+      vault:
+        condition: service_healthy
+      phishing-detector:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     networks:
       - mailguard-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
 
   ai-service:
     build: ./services/ai-service
@@ -47,9 +69,17 @@ services:
     env_file:
       - .env
     depends_on:
-      - vault
+      vault:
+        condition: service_healthy
     networks:
       - mailguard-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
 
   phishing-detector:
     build: ./services/phishing-detector
@@ -62,9 +92,17 @@ services:
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=${VAULT_TOKEN}
     depends_on:
-      - vault
+      vault:
+        condition: service_healthy
     networks:
       - mailguard-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus:latest
@@ -80,6 +118,11 @@ services:
       - "9090:9090"
     networks:
       - mailguard-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     restart: unless-stopped
 
   grafana:
@@ -97,8 +140,15 @@ services:
     networks:
       - mailguard-net
     depends_on:
-      - prometheus
-      - loki
+      prometheus:
+        condition: service_healthy
+      loki:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     restart: unless-stopped
 
   loki:
@@ -112,6 +162,11 @@ services:
       - "3100:3100"
     networks:
       - mailguard-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3100/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     restart: unless-stopped
 
   promtail:
@@ -125,7 +180,13 @@ services:
     networks:
       - mailguard-net
     depends_on:
-      - loki
+      loki:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:9080/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     restart: unless-stopped
 
 networks:
