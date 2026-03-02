@@ -6,7 +6,7 @@ from datetime import datetime
 import re
 import dns.resolver
 import logging
-
+from prometheus_fastapi_instrumentator import Instrumentator
 from checks import (
     check_url_virustotal, check_domain_virustotal,
     check_ip_abuseipdb, compute_verdict, check_typosquatting,
@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="DevDesperate Phishing Detector API")
 
+Instrumentator().instrument(app).expose(app)
 URL_REGEX = re.compile(r'https?://[^\s<>"\']+')
 IP_REGEX = re.compile(r'\b(?:\d{1,3}\.){3}\d{1,3}\b')
 

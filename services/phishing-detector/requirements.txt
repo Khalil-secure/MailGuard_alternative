@@ -6,3 +6,4 @@ oletools
 dnspython
 hvac
 aiosmtpd
+prometheus-fastapi-instrumentator
