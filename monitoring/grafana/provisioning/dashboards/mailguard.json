@@ -206,7 +206,7 @@
       "gridPos": { "x": 0, "y": 20, "w": 24, "h": 8 },
       "targets": [{
         "datasource": "Loki",
-        "expr": "{service=\"gateway\"} |= \"scan\"",
+        "expr": "{service=\"mailguard-gateway-1\"} |= \"scan\"",
         "legendFormat": ""
       }],
       "options": {
