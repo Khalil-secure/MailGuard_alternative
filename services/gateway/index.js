@@ -148,7 +148,7 @@ async function recordScan(userId) {
   await pool.query('INSERT INTO scans (user_id) VALUES ($1)', [userId])
 }
 
-metrics.scansTotal.inc({ verdict: data.verdict, user_type: req.user ? 'authenticated' : 'free' })
+
 if (data.checks) {
   data.checks.filter(c => c.verdict !== 'SAFE').forEach(c => {
     metrics.engineHits.inc({ engine: c.source })
@@ -249,7 +249,7 @@ app.use('/phishing', ipRateLimit, verifyToken, requireAccessOrFree, checkUserRat
 
     // Add scan info to response
     const data = response.data
-
+    
      metrics.scansTotal.inc({
       verdict: data.verdict || 'UNKNOWN',
       user_type: req.user ? 'authenticated' : 'free'

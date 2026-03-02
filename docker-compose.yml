@@ -14,6 +14,7 @@ services:
       - IPC_LOCK
     networks:
       - mailguard-net
+
   postgres:
     image: postgres:15
     container_name: mailguard-postgres
@@ -25,6 +26,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - mailguard-net
+
   gateway:
     build: ./services/gateway
     ports:
@@ -64,9 +66,75 @@ services:
     networks:
       - mailguard-net
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: mailguard-prometheus
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=7d'
+    ports:
+      - "9090:9090"
+    networks:
+      - mailguard-net
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: mailguard-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-mailguard123}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3001:3000"
+    networks:
+      - mailguard-net
+    depends_on:
+      - prometheus
+      - loki
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:latest
+    container_name: mailguard-loki
+    volumes:
+      - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yaml
+      - loki-data:/tmp/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    networks:
+      - mailguard-net
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: mailguard-promtail
+    volumes:
+      - ./monitoring/promtail/promtail-config.yml:/etc/promtail/config.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/log:/var/log
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - mailguard-net
+    depends_on:
+      - loki
+    restart: unless-stopped
+
 networks:
   mailguard-net:
     driver: bridge
+
 volumes:
   vault-data:
   postgres-data:
+  prometheus-data:
+  grafana-data:
+  loki-data:
