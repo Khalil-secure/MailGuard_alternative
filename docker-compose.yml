@@ -35,27 +35,28 @@ services:
       retries: 3
       start_period: 15s
 
-gateway:
-    build: ./services/gateway
-    ports:
-      - "3000:3000"
-    env_file:
-      - .env
-    depends_on:
-      - vault
-      phishing-detector:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
-    networks:
-      - mailguard-net
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
-    restart: unless-stopped
+  gateway:
+      build: ./services/gateway
+      ports:
+        - "3000:3000"
+      env_file:
+        - .env
+      depends_on:
+        vault:
+          condition: service_started
+        phishing-detector:
+          condition: service_healthy
+        postgres:
+          condition: service_healthy
+      networks:
+        - mailguard-net
+      healthcheck:
+        test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/health"]
+        interval: 30s
+        timeout: 10s
+        retries: 3
+        start_period: 15s
+      restart: unless-stopped
 
   ai-service:
     build: ./services/ai-service
