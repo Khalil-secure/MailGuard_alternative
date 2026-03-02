@@ -45,9 +45,9 @@ services:
         vault:
           condition: service_started
         phishing-detector:
-          condition: service_healthy
+          condition: service_started
         postgres:
-          condition: service_healthy
+          condition: service_started
       networks:
         - mailguard-net
       healthcheck:
