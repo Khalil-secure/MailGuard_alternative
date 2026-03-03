@@ -56,6 +56,13 @@ const authEvents = new client.Counter({
   registers: [register]
 })
 
+const carbonTotal = new client.Counter({
+  name: 'mailguard_carbon_grams_total',
+  help: 'Estimated CO2 emissions in grams from scans (GCP europe-west1 0.068 gCO2/kWh)',
+  labelNames: ['user_type'],
+  registers: [register]
+})
+
 module.exports = {
   register,
   scansTotal,
@@ -63,5 +70,6 @@ module.exports = {
   rateLimitHits,
   activeUsers,
   requestDuration,
-  authEvents
+  authEvents,
+  carbonTotal 
 }

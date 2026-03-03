@@ -249,22 +249,21 @@ app.use('/phishing', ipRateLimit, verifyToken, requireAccessOrFree, checkUserRat
       headers: { 'Content-Type': 'application/json' },
       timeout: 120000
     })
-
     if (req.user) await recordScan(req.user.id)
 
     // Add scan info to response
     const data = response.data
-    
-     metrics.scansTotal.inc({
+
+    metrics.scansTotal.inc({
       verdict: data.verdict || 'UNKNOWN',
       user_type: req.user ? 'authenticated' : 'free'
     })
+    metrics.carbonTotal.inc({ user_type: req.user ? 'authenticated' : 'free' }, 0.0003)
     if (data.checks) {
       data.checks
         .filter(c => c.verdict !== 'SAFE')
         .forEach(c => metrics.engineHits.inc({ engine: c.source }))
     }
-    // ← END BLOCK
 
     if (!req.user) {
       data._free_scans_remaining = req.freeScansRemaining
