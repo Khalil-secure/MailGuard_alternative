@@ -2,8 +2,6 @@
 
 > Production-grade email phishing detection SaaS — built from scratch by a junior dev who refused to give up.
 
-**Live demo:** https://mail-guard-beta.vercel.app
-
 
 ---
 
