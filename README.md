@@ -302,7 +302,6 @@ This entire platform was built in a single extended session — every service ve
 
 The stack includes microservices, OAuth, JWT, secret management, threat intelligence APIs, Docker orchestration, cloud deployment, and a real SaaS business model.
 
-If you're a recruiter or hiring manager reading this: you just read the commit history. This is the work.
 
 ---
 
